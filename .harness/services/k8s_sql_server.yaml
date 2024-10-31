@@ -46,4 +46,4 @@ service:
           value: default
   gitOpsEnabled: false
   orgIdentifier: default
-  projectIdentifier: default_project
+  projectIdentifier: dbdevops1
