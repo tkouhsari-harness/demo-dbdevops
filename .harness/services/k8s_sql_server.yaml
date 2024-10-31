@@ -12,7 +12,7 @@ service:
               store:
                 type: Github
                 spec:
-                  connectorRef: demodbdevops
+                  connectorRef: github
                   gitFetchType: Branch
                   paths:
                     - setup/k8s_sql.yml
@@ -27,7 +27,7 @@ service:
               store:
                 type: Github
                 spec:
-                  connectorRef: demodbdevops
+                  connectorRef: github
                   gitFetchType: Branch
                   paths:
                     - setup/values.yml
@@ -38,7 +38,7 @@ service:
           type: String
           description: ""
           required: false
-          value: <+secrets.getValue("org.mysql_sa_password")>
+          value: <+secrets.getValue("mysql_sa_password")>
         - name: namespace
           type: String
           description: ""
