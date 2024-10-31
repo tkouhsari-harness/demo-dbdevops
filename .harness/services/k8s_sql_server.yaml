@@ -1,6 +1,8 @@
 service:
-  name: k8s sql server
-  identifier: k8s_sql_server
+  name: asdf
+  identifier: asdf
+  orgIdentifier: default
+  projectIdentifier: dbdevops1
   serviceDefinition:
     type: Kubernetes
     spec:
@@ -44,6 +46,3 @@ service:
           description: ""
           required: false
           value: default
-  gitOpsEnabled: false
-  orgIdentifier: default
-  projectIdentifier: dbdevops1
