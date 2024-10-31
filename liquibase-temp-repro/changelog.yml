@@ -1,0 +1,164 @@
+databaseChangeLog:
+  - changeSet:
+      id: satwell:basisSetup
+      author: satwell
+      changes:
+        - createTable:
+            tableName: BILLING
+            columns:
+              - column:
+                  name: TRANSACTION_ID
+                  type: INT
+              - column:
+                  name: SUBSCRIPTION_PLAN_ID
+                  type: INT
+              - column:
+                  name: WHEN_CREATED
+                  type: smalldatetime
+        - createTable:
+            tableName: STRIPE_PAYMENT_METHOD
+            columns:
+              - column:
+                  name: ID
+                  type: INT
+              - column:
+                  name: STATUS
+                  type: VARCHAR(50)
+              - column:
+                  name: CUSTOMER_ID
+                  type: VARCHAR(30)
+        - createTable:
+            tableName: MEMBER
+            columns:
+              - column:
+                  name: TRANSACTION_ID
+                  type: INT
+              - column:
+                  name: ID
+                  type: INT
+        - createTable:
+            tableName: PAYER_PAYMENT_PROFILE
+            columns:
+              - column:
+                  name: STATUS
+                  type: VARCHAR(50)
+              - column:
+                  name: MEMBER_ID
+                  type: INT
+  - changeSet:
+      id: satwell:basisSetup-2
+      author: satwell
+      changes: 
+      - insert:
+          tableName:  MEMBER
+          columns:
+          -  column:
+              name:  ID
+              value:  34240854
+          -  column:
+              name:  TRANSACTION_ID
+              value:  84464060
+      - insert:
+          tableName:  PAYER_PAYMENT_PROFILE
+          columns:
+          -  column:
+              name:  STATUS
+              value:  myStatus
+          -  column:
+              name:  MEMBER_ID
+              value:  34240854
+      - insert:
+          tableName:  STRIPE_PAYMENT_METHOD
+          columns:
+          -  column:
+              name:  STATUS
+              value:  myStatus
+          -  column:
+              name:  CUSTOMER_ID
+              value:  cus_Qph4F0JcDstwU4
+          -  column:
+              name:  ID
+              value:  1212236
+      rollback:
+        -  delete:
+            tableName:  STRIPE_PAYMENT_METHOD
+        -  delete:
+            tableName:  PAYER_PAYMENT_PROFILE
+        -  delete:
+            tableName:  MEMBER
+  -  changeSet:
+      id:  setupInitialProcedure
+      author:  satwell
+      changes:
+      -  createProcedure:
+          procedureText:  |-
+                              CREATE PROCEDURE CompareExpectedActual
+                                  @sqlQuery NVARCHAR(MAX)
+                              AS
+                              BEGIN
+                                  -- Declare necessary variables
+                                  DECLARE @expected NVARCHAR(MAX), @actual NVARCHAR(MAX);
+                                  DECLARE @query NVARCHAR(MAX);
+                                  DECLARE @errorMessage NVARCHAR(MAX);
+                              
+                                  -- Create a temp table to hold the result of the query
+                                  CREATE TABLE #ResultTemp (Expected NVARCHAR(MAX), Actual NVARCHAR(MAX));
+                              
+                                  -- Dynamically insert the query result into the temp table
+                                  SET @query = 'INSERT INTO #ResultTemp (Expected, Actual) ' + @sqlQuery;
+                              
+                                  -- Execute the dynamic SQL query
+                                  EXEC sp_executesql @query;
+                              
+                                  -- Declare a cursor to iterate over the result set
+                                  DECLARE cur CURSOR FOR 
+                                  SELECT Expected, Actual 
+                                  FROM #ResultTemp;
+                              
+                                  OPEN cur;
+                              
+                                  FETCH NEXT FROM cur INTO @expected, @actual;
+                              
+                                  -- Iterate through the result rows
+                                  WHILE @@FETCH_STATUS = 0
+                                  BEGIN
+                                      -- Compare Expected and Actual
+                                      IF @expected != @actual
+                                      BEGIN
+                                          -- Raise an error if they do not match
+                                          SET @errorMessage = 'Verification failed: Expected = ' + @expected + ', but Actual = ' + @actual;
+                                          RAISERROR(@errorMessage, 16, 1);
+                                          CLOSE cur;
+                                          DEALLOCATE cur;
+                                          RETURN;
+                                      END
+                              
+                                      FETCH NEXT FROM cur INTO @expected, @actual;
+                                  END
+                              
+                                  CLOSE cur;
+                                  DEALLOCATE cur;
+                              
+                                  -- Drop the temp table
+                                  DROP TABLE #ResultTemp;
+                              
+                                  PRINT 'All rows match successfully!';
+                              END;
+          procedureName: ensure_actual_matches_expected
+          replaceIfExists: false
+  - changeSet:
+      id: sql/2024-10-14-12-06-member-34240854.sql
+      author: satwell
+      changes: 
+      - sqlFile:
+          path:  sql/2024-10-14-12-06-member-34240854.sql
+      rollback: 
+      - sqlFile:
+          path:  sql/2024-10-14-12-06-member-34240854-rollback.sql
+
+
+
+
+
+
+
