@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: setup:1
+      author: setup
+      comment: Create DBs for each environment/infrastructure
+      changes:
+        - sql: 
+            dbms: 'mssql'
+            sql: |
+              use master;
+              Go;
+              IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'harness-demo')
+              BEGIN
+                CREATE DATABASE development;
+                CREATE DATABASE test;
+                CREATE DATABASE staging;
+                CREATE DATABASE production-us;
+                CREATE DATABASE production-eu;
+                CREATE DATABASE production-apj-north;
+                CREATE DATABASE production-af;
+                CREATE DATABASE production-me;
+                CREATE DATABASE production-apj-south;             
+              END;
+              GO
