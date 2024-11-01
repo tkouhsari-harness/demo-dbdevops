@@ -33,7 +33,7 @@ spec:
         - name: ACCEPT_EULA
           value: "Y"
         - name: MSSQL_SA_PASSWORD 
-          value: {{.Values.secret}} #${serviceVariable.secret} #"${values.secret}" #"${stage.variables.secret}"  # Set a strong password for SA account. Highly recommend to modify this before applying
+          value: {{.Values.secret}} 
         - name: MSSQL_PID
           value: "Developer"
         ports:
