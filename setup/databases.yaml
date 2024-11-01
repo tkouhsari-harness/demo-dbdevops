@@ -7,18 +7,39 @@ databaseChangeLog:
         - sql: 
             dbms: 'mssql'
             sql: |
-              use master;
-              Go;
-              IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'harness-demo')
+              -- Define the database list
+              DECLARE @databaseList TABLE (DatabaseName NVARCHAR(128));
+              
+              -- Add the database names to the list
+              INSERT INTO @databaseList (DatabaseName)
+              VALUES ('development'), ('test'), ('staging'), ('production_us'), ('production_eu'), ('production_apj_north'), ('production_af'), ('production_me'), ('production_apj_south');
+              
+              -- Loop through the database list and create databases if they don't exist
+              DECLARE @databaseName NVARCHAR(128);
+              DECLARE db_cursor CURSOR FOR SELECT DatabaseName FROM @databaseList;
+              
+              OPEN db_cursor;
+              FETCH NEXT FROM db_cursor INTO @databaseName;
+              
+              WHILE @@FETCH_STATUS = 0
               BEGIN
-                CREATE DATABASE development;
-                CREATE DATABASE test;
-                CREATE DATABASE staging;
-                CREATE DATABASE production-us;
-                CREATE DATABASE production-eu;
-                CREATE DATABASE production-apj-north;
-                CREATE DATABASE production-af;
-                CREATE DATABASE production-me;
-                CREATE DATABASE production-apj-south;             
+                  -- Check if the database exists, if not, create the database
+                  IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = @databaseName)
+                  BEGIN
+                      DECLARE @createDatabaseQuery NVARCHAR(MAX);
+                      SET @createDatabaseQuery = N'CREATE DATABASE ' + QUOTENAME(@databaseName);
+              
+                      EXEC sp_executesql @createDatabaseQuery;
+                      PRINT 'Created database: ' + @databaseName;
+                  END
+                  ELSE
+                  BEGIN
+                      PRINT 'Database already exists: ' + @databaseName;
+                  END
+              
+                  FETCH NEXT FROM db_cursor INTO @databaseName;
               END;
-              GO
+              
+              CLOSE db_cursor;
+              DEALLOCATE db_cursor;
+
